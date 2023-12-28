@@ -1,96 +1,20 @@
-import math
-from Crypto.Util.number import *
+from Crypto.Util.number import long_to_bytes
 
-def convergents_expansion(e):
-    # Function to generate convergents of the continued fraction expansion of 'e'
-    nominators = []  # List to store Nominators
-    denominators = []  # List to store Denominators
+# Given encrypted RSA parameters in hexadecimal format
+N = "0xb8af3d3afb893a602de4afe2a29d7615075d1e570f8bad8ebbe9b5b9076594cf06b6e7b30905b6420e950043380ea746f0a14dae34469aa723e946e484a58bcd92d1039105871ffd63ffe64534b7d7f8d84b4a569723f7a833e6daf5e182d658655f739a4e37bd9f4a44aff6ca0255cda5313c3048f56eed5b21dc8d88bf5a8f8379eac83d8523e484fa6ae8dbcb239e65d3777829a6903d779cd2498b255fcf275e5f49471f35992435ee7cade98c8e82a8beb5ce1749349caa16759afc4e799edb12d299374d748a9e3c82e1cc983cdf9daec0a2739dadcc0982c1e7e492139cbff18c5d44529407edfd8e75743d2f51ce2b58573fea6fbd4fe25154b9964d"
+e = "0x9ab58dbc8049b574c361573955f08ea69f97ecf37400f9626d8f5ac55ca087165ce5e1f459ef6fa5f158cc8e75cb400a7473e89dd38922ead221b33bc33d6d716fb0e4e127b0fc18a197daf856a7062b49fba7a86e3a138956af04f481b7a7d481994aeebc2672e500f3f6d8c581268c2cfad4845158f79c2ef28f242f4fa8f6e573b8723a752d96169c9d885ada59cdeb6dbe932de86a019a7e8fc8aeb07748cfb272bd36d94fe83351252187c2e0bc58bb7a0a0af154b63397e6c68af4314601e29b07caed301b6831cf34caa579eb42a8c8bf69898d04b495174b5d7de0f20cf2b8fc55ed35c6ad157d3e7009f16d6b61786ee40583850e67af13e9d25be3"
+c = "0x3f984ff5244f1836ed69361f29905ca1ae6b3dcf249133c398d7762f5e277919174694293989144c9d25e940d2f66058b2289c75d1b8d0729f9a7c4564404a5fd4313675f85f31b47156068878e236c5635156b0fa21e24346c2041ae42423078577a1413f41375a4d49296ab17910ae214b45155c4570f95ca874ccae9fa80433a1ab453cbb28d780c2f1f4dc7071c93aff3924d76c5b4068a0371dff82531313f281a8acadaa2bd5078d3ddcefcb981f37ff9b8b14c7d9bf1accffe7857160982a2c7d9ee01d3e82265eec9c7401ecc7f02581fd0d912684f42d1b71df87a1ca51515aab4e58fab4da96e154ea6cdfb573a71d81b2ea4a080a1066e1bc3474"
+#wiener attack 
+#use RSHack
+# Converting hexadecimal strings to integer values
+N = int(N, 16)
+e = int(e, 16)
+c = int(c, 16)
 
-    for i in range(len(e)):
-        if i == 0:
-            ni = e[i]
-            di = 1
-        elif i == 1:
-            ni = e[i] * e[i - 1] + 1
-            di = e[i]
-        else:  # i > 1
-            ni = e[i] * nominators[i - 1] + nominators[i - 2]
-            di = e[i] * denominators[i - 1] + denominators[i - 2]
+# Known private key 'd' 
+d = 79434351637397000170240219617391501050474168352481334243649813782018808904459
 
-        nominators.append(ni)
-        denominators.append(di)
+# Decrypting the ciphertext 'c' using the private key 'd' and modulus 'N'
+flag = long_to_bytes(pow(c, d, N))
 
-    return nominators, denominators
-
-def get_cf_expansion(x, y):
-    # Function to generate the continued fraction expansion for 'x' and 'y'
-    cf_list = []
-    x0 = x
-    y0 = y
-    q0 = x // y
-    x0 = (x - y * q0)
-    cf_list.append(q0)
-
-    while x0 != 0:
-        temp = y0
-        y0 = x0
-        x0 = temp
-        q0 = x0 // y0
-        x0 = (x0 - y0 * q0)
-        cf_list.append(q0)
-
-    return cf_list
-
-def is_square(apositiveint):
-    # Function to check if a positive integer is a square
-    x = apositiveint // 2
-    seen = set([x])
-
-    while x * x != apositiveint:
-        x = (x + (apositiveint // x)) // 2
-        if x in seen:
-            return False
-        seen.add(x)
-
-    return True
-
-N = 0x8da7d2ec7bf9b322a539afb9962d4d2ebeb3e3d449d709b80a51dc680a14c87ffa863edfc7b5a2a542a0fa610febe2d967b58ae714c46a6eccb44cd5c90d1cf5e271224aa3367e5a13305f2744e2e56059b17bf520c95d521d34fdad3b0c12e7821a3169aa900c711e6923ca1a26c71fc5ac8a9ff8c878164e2434c724b68b508a030f86211c1307b6f90c0cd489a27fdc5e6190f6193447e0441a49edde165cf6074994ea260a21ea1fc7e2dfb038df437f02b9ddb7b5244a9620c8eca858865e83bab3413135e76a54ee718f4e431c29d3cb6e353a75d74f831bed2cc7bdce553f25b617b3bdd9ef901e249e43545c91b0cd8798b27804d61926e317a2b745
-e = 0x86d357db4e1b60a2e9f9f25e2db15204c820b6e8d8d04d29db168c890bc8a6c1e31b9316c9680174e128515a00256b775a1a8ccca9c6936f1b4c2298c03032cda4dd8eca1145828d31466bf56bfcf0c6a8b4a1b2fb27de7a57fae7430048d7590734b2f05b6443ad60d89606802409d2fa4c6767ad42bffae01a8ef1364418362e133fa7b2770af64a68ad50ad8d2bd5cebb99ceb13368fb31a6e7503e753f8638e21a96af1b6498c18578ba89b98d70fa482ad137d28fe701b4b77baa25d5e84c81b26ee9bddf8cbb51a071c60dd57714de379cd4bc14932809ba18524a0a18e4133665cfc46e2c4fcfbc28e0a0957e5513a7307c422b87a6182d0b6a074b4d
-c = 0x6a2f2e401a54eeb5dab1e6d5d80e92a6ca189049e22844c825012b8f0578f95b269b19644c7c8af3d544840d380ed75fdf86844aa8976622fa0501eaec0e5a1a5ab09d3d1037e55501c4e270060470c9f4019ced6c4e67673843daf2fd71c64f3dd8939ae322f2b79d283b3382052d076ebe9bb50b0042f1f7dd7beadf0f5686926ade9fc8370283ead781a21896e7a878d99e77c3bb1f470401062c0e0327fd85da1cf12901635f1df310e8f8c7d87aff5a01dbbecd739cd8f36462060d0eb237af8d613e2d9cebb67d612bcfc353ef2cd44b7ac85e471287eb04ae9b388b66ea8eb32429ae96dba5da8206894fa8c58a7440a127fceb5717a2eaa3c29f25f7
-
-# Generate continued fraction expansion for e and N
-continued_fraction = get_cf_expansion(e, N)
-
-# Print continued fraction expansion
-print(continued_fraction)
-
-# Iterate through the continued fraction expansion
-for i in range(len(continued_fraction)):
-    print("Iteration " + str(i))
-    
-    # Guess k and dg from convergents expansion
-    guessed_kdg_expansion = continued_fraction[:i]
-    
-    if i % 2 == 0:
-        guessed_kdg_expansion.append(continued_fraction[i] + 1)
-    else:
-        guessed_kdg_expansion.append(continued_fraction[i])
-        
-    nominator_list, denominator_list = convergents_expansion(guessed_kdg_expansion)
-    guessed_k = nominator_list[i]
-    guessed_dg = denominator_list[i]
-    guessed_edg = e * guessed_dg
-    guessed_phi = guessed_edg // guessed_k
-    guessed_g = guessed_edg % guessed_k
-    
-    # Check for square and calculate possible values
-    if (N - guessed_phi + 1) % 2 == 1:
-        continue
-    
-    guessed_p_plus_q_by_2 = (N - guessed_phi + 1) // 2
-    guessed_p_minus_q_by_2_sq = guessed_p_plus_q_by_2 ** 2 - N
-    
-    if is_square(guessed_p_minus_q_by_2_sq):
-        print("D: " + str(guessed_dg // guessed_g))
-        print(long_to_bytes(pow(c, guessed_dg // guessed_g, N)))
-        break
+print(flag)
